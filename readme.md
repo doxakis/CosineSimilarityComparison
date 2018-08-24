@@ -149,7 +149,7 @@ The Advanced Vector Extensions of modern CPU can be used per thread. Adding more
 
 Obviously, using double is way slower than integer. If possible, always prefer integer. If you want to keep some digits, you could multiple the number by 10 or 100 and convert it to integer. If you really want to keep double, maybe you should consider using the GPU.
 
-If we compare the vectorized version (integer array, v1 and v2), the dot product is faster than doing a addition/multiplication on a accumulator vector and taking the sum of the accumulator when having small dimension in the array. (It's slower than the simple method on 1 thread.) But, if you consider an array with a lot of dimension, it's faster using an accumulator vector than using the dot product operation.
+If we compare the vectorized version (integer array, v1 and v2), the dot product is faster than doing an addition/multiplication on an accumulator vector and taking the sum of the accumulator when having small dimension in the array. (It's slower than the simple method on 1 thread.) But, if you consider an array with a lot of dimension, it's faster using an accumulator vector than using the dot product operation.
 
 # Copyright and license
 
