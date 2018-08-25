@@ -2,6 +2,7 @@
 using ILGPU.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace CosineSimilarityComparison.Versions
@@ -27,13 +28,21 @@ namespace CosineSimilarityComparison.Versions
 					using (var context = new Context())
 					using (var accelerator = Accelerator.Create(context, acceleratorId))
 					{
-						var kernel = accelerator.LoadAutoGroupedStreamKernel<
-							Index, ArrayView2D<int>, ArrayView2D<double>>(CosineSimilarityKernel);
+						Action<Index, ArrayView2D<int>, ArrayView2D<double>> kernel;
+						{
+							var watch = Stopwatch.StartNew();
+							kernel = accelerator.LoadAutoGroupedStreamKernel<Index, ArrayView2D<int>, ArrayView2D<double>>(CosineSimilarityKernel);
+							//Console.WriteLine("    accelerator.LoadAutoGroupedStreamKernel(): " + watch.Elapsed);
+						}
 
 						using (var gpuDistances = accelerator.Allocate<double>(numSample * numSample))
 						using (var gpuDataset = accelerator.Allocate<int>(numSample * dim))
 						{
-							gpuDataset.CopyFrom(dataset, 0, 0, dataset.Length);
+							{
+								var watch = Stopwatch.StartNew();
+								gpuDataset.CopyFrom(dataset, 0, 0, dataset.Length);
+								//Console.WriteLine("    gpuDataset.CopyFrom(): " + watch.Elapsed);
+							}
 
 							// Launch buffer.Length many threads and pass a view to buffer
 							// Note that the kernel launch does not involve any boxing
@@ -41,8 +50,12 @@ namespace CosineSimilarityComparison.Versions
 							var b = gpuDistances.As2DView(numSample, numSample);
 							kernel(numSample * numSample, a, b);
 
-							// Wait for the kernel to finish...
-							accelerator.Synchronize();
+							{
+								var watch = Stopwatch.StartNew();
+								// Wait for the kernel to finish...
+								accelerator.Synchronize();
+								//Console.WriteLine("    accelerator.Synchronize(): " + watch.Elapsed);
+							}
 
 							// Resolve and verify data
 							var data = gpuDistances.GetAsArray();

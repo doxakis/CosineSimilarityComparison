@@ -139,6 +139,89 @@ Dataset: 10000x1000
 Gpu:                    Exception: unspecified launch failure
 ```
 
+If we consider the dataset 200x100000:
+
+```
+GpuCosineSimilarityIntegerVersionCacheKernel:
+    (init):             256 ms
+    (ComputeDistances): 378 ms
+    (ComputeDistances): 356 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 341 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 340 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 366 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 356 ms
+    (ComputeDistances): 420 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 349 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 354 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 348 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 355 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 351 ms
+    (ComputeDistances): 352 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 343 ms
+    (ComputeDistances): 351 ms
+    (ComputeDistances): 347 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 354 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 343 ms
+    min: 340 ms
+    max: 420 ms
+    (dispose):          34 ms
+```
+
+If we consider the dataset: 200x100000:
+
+```
+Simple 1 thread:        3338 ms
+Simple 2 threads:       1694 ms
+Simple 4 threads:       845 ms
+Simple 8 threads:       446 ms
+SimpleV2 1 thread:      1940 ms
+SimpleV2 2 threads:     982 ms
+SimpleV2 4 threads:     549 ms
+SimpleV2 8 threads:     273 ms
+```
+
 # Conclusion
 
 With the simple method, adding more thread reduce the duration.
@@ -150,6 +233,12 @@ The Advanced Vector Extensions of modern CPU can be used per thread. Adding more
 Obviously, using double is way slower than integer. If possible, always prefer integer. If you want to keep some digits, you could multiple the number by 10 or 100 and convert it to integer. If you really want to keep double, maybe you should consider using the GPU.
 
 If we compare the vectorized version (integer array, v1 and v2), the dot product is faster than doing an addition/multiplication on an accumulator vector and taking the sum of the accumulator when having small dimension in the array. (It's slower than the simple method on 1 thread.) But, if you consider an array with a lot of dimension, it's faster using an accumulator vector than using the dot product operation.
+
+The kernel function can be cached for multiple use. If we consider the dataset 200x100000:
+- Initialization can take 256 ms.
+- Computing the distance vary between 340 ms and 420 ms. (about a variation of 80 ms)
+
+Precalculating the magnitude for each vector greatly reduce the amount of operations to do. (class: SimpleV2CosineSimilarityIntegerVersion)
 
 # Copyright and license
 

@@ -109,6 +109,34 @@ namespace CosineSimilarityComparison
 
 			{
 				var watch = Stopwatch.StartNew();
+				var result = SimpleV2CosineSimilarityIntegerVersion.ComputeDistances(dataSet, useMultipleThread: false);
+				Console.WriteLine("SimpleV2 1 thread:      " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
+				var result = SimpleV2CosineSimilarityIntegerVersion.ComputeDistances(dataSet, useMultipleThread: true, maxDegreeOfParallelism: 2);
+				Console.WriteLine("SimpleV2 2 threads:     " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
+				var result = SimpleV2CosineSimilarityIntegerVersion.ComputeDistances(dataSet, useMultipleThread: true, maxDegreeOfParallelism: 4);
+				Console.WriteLine("SimpleV2 4 threads:     " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
+				var result = SimpleV2CosineSimilarityIntegerVersion.ComputeDistances(dataSet, useMultipleThread: true, maxDegreeOfParallelism: 8);
+				Console.WriteLine("SimpleV2 8 threads:     " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
 				var result = VectorizedV1CosineSimilarityIntegerVersion.ComputeDistances(dataSet, useMultipleThread: false);
 				Console.WriteLine("VectorizedV1 1 thread:  " + watch.ElapsedMilliseconds + " ms");
 				ValidateSameResult(distances, result);
@@ -176,6 +204,52 @@ namespace CosineSimilarityComparison
 					Console.WriteLine("Gpu:                    Exception: " + ex.Message);
 				}
 			}
+
+			// GPU with cached kernel.
+			Console.WriteLine("GpuCosineSimilarityIntegerVersionCacheKernel:");
+			{
+				try
+				{
+					var instance = new GpuCosineSimilarityIntegerVersionCacheKernel();
+
+					{
+						var watch = Stopwatch.StartNew();
+						instance.Init();
+						Console.WriteLine("    (init):             " + watch.ElapsedMilliseconds + " ms");
+					}
+
+					// Test GPU latency and find out if GPU duration is stable within multiple call.
+					long min = long.MaxValue;
+					long max = long.MinValue;
+
+					for (int i = 0; i < 60; i++)
+					{
+						var watch = Stopwatch.StartNew();
+						var result = instance.ComputeDistances(dataSet);
+						long elapsedMilliseconds = watch.ElapsedMilliseconds;
+						if (elapsedMilliseconds < min)
+							min = elapsedMilliseconds;
+						if (elapsedMilliseconds > max)
+							max = elapsedMilliseconds;
+						Console.WriteLine("    (ComputeDistances): " + elapsedMilliseconds + " ms");
+						ValidateSameResult(distances, result);
+					}
+					Console.WriteLine("    min: " + min + " ms");
+					Console.WriteLine("    max: " + max + " ms");
+
+					{
+						var watch = Stopwatch.StartNew();
+						instance.Dispose();
+						Console.WriteLine("    (dispose):          " + watch.ElapsedMilliseconds + " ms");
+					}
+
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("Gpu:                    Exception: " + ex.Message);
+				}
+			}
+
 		}
 
 		private static void RunComparisonDoubleVersions(int numElement, int numDimension)
