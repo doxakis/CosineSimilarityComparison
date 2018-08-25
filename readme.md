@@ -234,9 +234,11 @@ Obviously, using double is way slower than integer. If possible, always prefer i
 
 If we compare the vectorized version (integer array, v1 and v2), the dot product is faster than doing an addition/multiplication on an accumulator vector and taking the sum of the accumulator when having small dimension in the array. (It's slower than the simple method on 1 thread.) But, if you consider an array with a lot of dimension, it's faster using an accumulator vector than using the dot product operation.
 
-The kernel function can be cached for multiple use. If we consider the dataset 200x100000:
-- Initialization can take 256 ms.
+With the GPU, the kernel function can be cached for multiple use. If we consider the dataset 200x100000:
+- Initialization take 256 ms
+- Dispose take 34 ms
 - Computing the distance vary between 340 ms and 420 ms. (about a variation of 80 ms)
+- Compared to GpuCosineSimilarityIntegerVersion (about 725 ms). It's faster if we do multiple call.
 
 Precalculating the magnitude for each vector greatly reduce the amount of operations to do. (class: SimpleV2CosineSimilarityIntegerVersion)
 
