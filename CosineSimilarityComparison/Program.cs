@@ -153,6 +153,34 @@ namespace CosineSimilarityComparison
 			}
 
 			{
+				var watch = Stopwatch.StartNew();
+				var result = VectorizedV1CosineSimilarityFloatVersion.ComputeDistances(dataSet, useMultipleThread: false);
+				Console.WriteLine("VectorizedV1 1 thread:  " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
+				var result = VectorizedV1CosineSimilarityFloatVersion.ComputeDistances(dataSet, useMultipleThread: true, maxDegreeOfParallelism: 2);
+				Console.WriteLine("VectorizedV1 2 threads: " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
+				var result = VectorizedV1CosineSimilarityFloatVersion.ComputeDistances(dataSet, useMultipleThread: true, maxDegreeOfParallelism: 4);
+				Console.WriteLine("VectorizedV1 4 threads: " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
+				var watch = Stopwatch.StartNew();
+				var result = VectorizedV1CosineSimilarityFloatVersion.ComputeDistances(dataSet, useMultipleThread: true, maxDegreeOfParallelism: 8);
+				Console.WriteLine("VectorizedV1 8 threads: " + watch.ElapsedMilliseconds + " ms");
+				ValidateSameResult(distances, result);
+			}
+
+			{
 				try
 				{
 					var watch = Stopwatch.StartNew();
