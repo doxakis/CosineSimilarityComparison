@@ -222,6 +222,80 @@ SimpleV2 4 threads:     549 ms
 SimpleV2 8 threads:     273 ms
 ```
 
+If we turn on/off optimize code:
+
+```
+Dataset: 200x100000
+
+x64 (optimize code unchecked)
+Compute with integer, result with double: 14237 ms
+Compute with integer, result with float: 14393 ms
+Compute with float, result with float: 14196 ms
+
+x64 (optimize code checked)
+Compute with integer, result with double: 3331 ms
+Compute with integer, result with float: 3332 ms
+Compute with float, result with float: 1874 ms
+```
+
+With the GPU, float vs integer:
+
+```
+Dataset: 200x100000
+GpuCosineSimilarityFloatVersionCacheKernel:
+    (init):             273 ms
+    (ComputeDistances): 166 ms
+    (ComputeDistances): 212 ms
+    (ComputeDistances): 181 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 161 ms
+    (ComputeDistances): 167 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 162 ms
+    (ComputeDistances): 160 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 160 ms
+    (ComputeDistances): 165 ms
+    (ComputeDistances): 159 ms
+    (ComputeDistances): 155 ms
+    (ComputeDistances): 157 ms
+    (ComputeDistances): 160 ms
+    min: 155 ms
+    max: 212 ms
+    (dispose):          49 ms
+
+Dataset: 200x100000
+GpuCosineSimilarityIntegerVersionCacheKernel:
+    (init):             274 ms
+    (ComputeDistances): 390 ms
+    (ComputeDistances): 563 ms
+    (ComputeDistances): 383 ms
+    (ComputeDistances): 338 ms
+    (ComputeDistances): 346 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 338 ms
+    (ComputeDistances): 340 ms
+    (ComputeDistances): 341 ms
+    (ComputeDistances): 348 ms
+    (ComputeDistances): 345 ms
+    (ComputeDistances): 340 ms
+    (ComputeDistances): 417 ms
+    (ComputeDistances): 344 ms
+    (ComputeDistances): 351 ms
+    (ComputeDistances): 341 ms
+    (ComputeDistances): 342 ms
+    (ComputeDistances): 359 ms
+    (ComputeDistances): 340 ms
+    (ComputeDistances): 348 ms
+    min: 338 ms
+    max: 563 ms
+    (dispose):          43 ms
+```
+
 # Conclusion
 
 With the simple method, adding more thread reduce the duration.
@@ -241,6 +315,10 @@ With the GPU, the kernel function can be cached for multiple use. If we consider
 - Compared to GpuCosineSimilarityIntegerVersion (about 725 ms). It's faster if we do multiple call.
 
 Precalculating the magnitude for each vector greatly reduce the amount of operations to do. (class: SimpleV2CosineSimilarityIntegerVersion)
+
+Make sure the optimize code is checked. (more than x4 speedup) Using float array results in better performance than double or integer array. If you use dotnet core, when you deploy using `dotnet publish -c Release`, the code is optimized.
+
+On the GPU, a float array gives better performance than an integer array.
 
 # Copyright and license
 
